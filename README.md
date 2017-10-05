@@ -1,7 +1,6 @@
-<<<<<<< HEAD
 # BIFTC2017-18
 Bainbridge Island's FTC Team's repository for the 2017-18 season
-=======
+
 ## Welcome!
 This GitHub repository contains the source code that is used to build an Android app to control a *FIRST* Tech Challenge competition robot.  To use this SDK, download/clone the entire project to your local computer.
 
@@ -584,4 +583,3 @@ In this latest version of the FTC SDK (20150803_001) the following changes shoul
 
 T. Eng
 August 3, 2015
->>>>>>> 9f1e829930e7e5e9c74d26aada5e19742dcd1e82
