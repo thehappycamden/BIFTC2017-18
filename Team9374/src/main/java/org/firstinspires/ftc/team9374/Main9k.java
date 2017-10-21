@@ -3,8 +3,8 @@ package org.firstinspires.ftc.team9374;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.team9374.CamdenStandClasses.Robot;
-import org.firstinspires.ftc.team9374.CamdenStandClasses.VectorD;
+import org.firstinspires.ftc.team9374.CSC.Robot;
+import org.firstinspires.ftc.team9374.CSC.VectorD;
 
 /**
  * Created by lego7_000 on 10/14/2017.

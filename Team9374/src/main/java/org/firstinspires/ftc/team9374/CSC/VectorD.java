@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.team9374.CamdenStandClasses;
+package org.firstinspires.ftc.team9374.CSC;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 

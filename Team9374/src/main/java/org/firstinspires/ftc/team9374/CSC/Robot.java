@@ -1,11 +1,12 @@
-package org.firstinspires.ftc.team9374.CamdenStandClasses;
+package org.firstinspires.ftc.team9374.CSC;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import static org.firstinspires.ftc.team9374.CamdenStandClasses.Spec.boolNeg;
+import static org.firstinspires.ftc.team9374.CSC.Spec.boolNeg;
 
 /**
  * Created by lego7_000 on 10/14/2017.
@@ -23,9 +24,19 @@ public class Robot {
     private DcMotor backLeft;
     private DcMotor backRight;
 
+    static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
+    static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
+    static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
+    static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
+            (WHEEL_DIAMETER_INCHES * 3.1415);
+    static final double     DRIVE_SPEED             = 0.6;
+    static final double     TURN_SPEED              = 0.5;
+
     public int speed = 3;
 
     public int mode = 0;
+
+    public ElapsedTime runTime = new ElapsedTime();
 
     public void init(HardwareMap hardwareMap) {
         /******************************************\
@@ -95,6 +106,20 @@ public class Robot {
         getMotors(mode, lStick, rStick);
     }
 
+    public void encoders(int mode) {
+        if (mode == 0) {
+            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        } else if (mode == 1) {
+            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+    }
+
     public void runMotors(double[] motors) {
         for (int i = 0; i < motors.length; i ++) {
             motors[i] = Range.clip(motors[i], -1, 1);
@@ -103,5 +128,33 @@ public class Robot {
         frontRight.setPower(motors[1]);
         backLeft.setPower(motors[2]);
         backRight.setPower(motors[3]);
+    }
+
+    public void resetTimer() {
+        runTime.reset();
+        runTime.startTime();
+    }
+
+    public void runToPosition(VectorD distance, double speed) {
+        int target = frontLeft.getCurrentPosition() + (int)(distance.y * COUNTS_PER_INCH);
+        resetTimer();
+        frontLeft.setTargetPosition(target);
+        frontRight.setTargetPosition(target);
+        backLeft.setTargetPosition(target);
+        backRight.setTargetPosition(target);
+
+        frontLeft.setPower(speed);
+        frontRight.setPower(speed);
+        backLeft.setPower(speed);
+        backRight.setPower(speed);
+
+        while (frontLeft.isBusy()) {
+
+        }
+
+        frontLeft.setPower(0);
+        frontRight.setPower(0);
+        backLeft.setPower(0);
+        backRight.setPower(0);
     }
 }

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.team9374.CamdenStandClasses;
+package org.firstinspires.ftc.team9374.CSC;
 
 /**
  * Created by lego7_000 on 10/21/2017.
