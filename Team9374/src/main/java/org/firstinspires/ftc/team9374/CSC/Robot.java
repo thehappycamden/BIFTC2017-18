@@ -3,6 +3,7 @@ package org.firstinspires.ftc.team9374.CSC;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -23,6 +24,10 @@ public class Robot {
     private DcMotor frontRight;
     private DcMotor backLeft;
     private DcMotor backRight;
+    private DcMotor glyphLift;
+
+    private Servo glyphLeft;
+    private Servo glyphRight;
 
     static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
@@ -47,11 +52,42 @@ public class Robot {
         frontRight = hardwareMap.dcMotor.get("DriveFrontRight");
         backLeft = hardwareMap.dcMotor.get("DriveBackLeft");
         backRight = hardwareMap.dcMotor.get("DriveBackRight");
+        glyphLift = hardwareMap.dcMotor.get("GlyphCenter");
+
+        //Servoes
+        glyphLeft = hardwareMap.servo.get("GlyphLeft");
+        glyphRight = hardwareMap.servo.get("GlyphRight");
 
         frontRight.setDirection(DcMotor.Direction.REVERSE);
         backRight.setDirection(DcMotor.Direction.REVERSE);
+        glyphLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        glyphLeft.setPosition(1);
+        glyphRight.setPosition(-1);
         speed = 2;
         mode = drive_mode;
+    }
+
+    public void grasp(double strength) {
+        glyphLeft.setPosition(strength);
+        glyphRight.setPosition(-strength);
+    }
+
+    public void lift(boolean mode) {
+        int distance;
+        if (mode) {
+            distance = 1440;
+        } else {
+            distance = 0;
+        }
+        glyphLift.setTargetPosition(distance);
+        glyphLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        glyphLift.setPower(1.0);
+        while (glyphLift.isBusy()) {
+
+        }
+        glyphLift.setPower(0);
+        glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void setSpeed(int speedSetting) {
