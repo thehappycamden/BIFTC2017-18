@@ -38,7 +38,7 @@ public class Robot {
 
     public ElapsedTime runTime = new ElapsedTime();
 
-    public void init(HardwareMap hardwareMap) {
+    public void init(HardwareMap hardwareMap, int drive_mode) {
         /******************************************\
         |*************Initializations**************|
         \******************************************/
@@ -51,6 +51,7 @@ public class Robot {
         frontRight.setDirection(DcMotor.Direction.REVERSE);
         backRight.setDirection(DcMotor.Direction.REVERSE);
         speed = 2;
+        mode = drive_mode;
     }
 
     public void setSpeed(int speedSetting) {
