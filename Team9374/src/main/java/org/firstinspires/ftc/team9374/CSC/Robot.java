@@ -63,14 +63,14 @@ public class Robot {
         glyphLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         glyphLeft.setPosition(1);
-        glyphRight.setPosition(-1);
+        glyphRight.setPosition(0);
         speed = 2;
         mode = drive_mode;
     }
 
     public void grasp(double strength) {
-        glyphLeft.setPosition(strength);
-        glyphRight.setPosition(-strength);
+        glyphLeft.setPosition(0.5-0.5*strength);
+        glyphRight.setPosition(0.5+0.5*strength);
     }
 
     public void lift(boolean mode) {
@@ -78,7 +78,7 @@ public class Robot {
         if (mode) {
             distance = 1440;
         } else {
-            distance = 0;
+            distance = -1440;
         }
         glyphLift.setTargetPosition(distance);
         glyphLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
