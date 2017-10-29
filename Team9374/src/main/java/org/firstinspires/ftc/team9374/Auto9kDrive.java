@@ -14,7 +14,7 @@ import org.firstinspires.ftc.team9374.CSC.VectorD;
 @Autonomous(name="9kDriveStraight",group="9kNoSkill")
 public class Auto9kDrive extends LinearOpMode {
     private VectorD movement = new VectorD(0, 1);
-    private VectorD rotation = new VectorD(0);
+    private VectorD rotation = new VectorD(0, 0);
 
     private Robot robot = new Robot();
 
@@ -28,7 +28,7 @@ public class Auto9kDrive extends LinearOpMode {
 
         while (opModeIsActive() && (robot.runTime.seconds() <= 3.0)) {
             movement.set(0, motorSpeed);
-            robot.runMotors(robot.getMotors(0, movement, rotation));
+            robot.runMotors(robot.getMotors(movement, rotation));
         }
 
         movement.set(0, 0);

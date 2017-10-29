@@ -124,7 +124,7 @@ public class Robot {
             fl = lStick.x;
             fr = lStick.y;
             bl = rStick.x;
-            br = rStick.x;
+            br = rStick.y;
         }
         double[] res;
         res = new double[4];
@@ -142,8 +142,8 @@ public class Robot {
         return movement[num];
     }
 
-    public void getMotors(VectorD lStick, VectorD rStick) {
-        getMotors(mode, lStick, rStick);
+    public double[] getMotors(VectorD lStick, VectorD rStick) {
+        return getMotors(mode, lStick, rStick);
     }
 
     public void encoders(int mode) {
