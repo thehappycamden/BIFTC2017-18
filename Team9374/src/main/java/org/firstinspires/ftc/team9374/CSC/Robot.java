@@ -20,14 +20,14 @@ public class Robot {
     /******************************************\
     |*****************Definitions**************|
     \******************************************/
-    private DcMotor frontLeft;
-    private DcMotor frontRight;
-    private DcMotor backLeft;
-    private DcMotor backRight;
+    private DcMotor frontLeftMotor;
+    private DcMotor frontRightMotor;
+    private DcMotor backLeftMotor;
+    private DcMotor backRightMotor;
     private DcMotor glyphLift;
 
-    private Servo glyphLeft;
-    private Servo glyphRight;
+    private Servo glyphGrabberLeft;
+    private Servo glyphGrabberRight;
 
     static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
@@ -36,6 +36,7 @@ public class Robot {
             (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double     DRIVE_SPEED             = 0.6;
     static final double     TURN_SPEED              = 0.5;
+    static final double     GLYPH_LIFT_RATIO        = 0.1; //Ratio Between Motor and Spinny thing that lifts manipulator.
 
     public int speed = 3;
 
@@ -48,44 +49,38 @@ public class Robot {
         |*************Initializations**************|
         \******************************************/
         //Motors
-        frontLeft = hardwareMap.dcMotor.get("DriveFrontLeft");
-        frontRight = hardwareMap.dcMotor.get("DriveFrontRight");
-        backLeft = hardwareMap.dcMotor.get("DriveBackLeft");
-        backRight = hardwareMap.dcMotor.get("DriveBackRight");
+        frontLeftMotor = hardwareMap.dcMotor.get("DriveFrontLeft");
+        frontRightMotor = hardwareMap.dcMotor.get("DriveFrontRight");
+        backLeftMotor = hardwareMap.dcMotor.get("DriveBackLeft");
+        backRightMotor = hardwareMap.dcMotor.get("DriveBackRight");
         glyphLift = hardwareMap.dcMotor.get("GlyphCenter");
 
-        //Servoes
-        glyphLeft = hardwareMap.servo.get("GlyphLeft");
-        glyphRight = hardwareMap.servo.get("GlyphRight");
+        //Servos
+        glyphGrabberLeft = hardwareMap.servo.get("GlyphLeft");
+        glyphGrabberRight = hardwareMap.servo.get("GlyphRight");
 
-        frontRight.setDirection(DcMotor.Direction.REVERSE);
-        backRight.setDirection(DcMotor.Direction.REVERSE);
+        frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
+        backRightMotor.setDirection(DcMotor.Direction.REVERSE);
         glyphLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        glyphLeft.setPosition(1);
-        glyphRight.setPosition(0);
+        glyphGrabberLeft.setPosition(0.4);
+        glyphGrabberRight.setPosition(0.5);
         speed = 2;
         mode = drive_mode;
     }
 
     public void grasp(double strength) {
-        glyphLeft.setPosition(0.5-0.5*strength);
-        glyphRight.setPosition(0.5+0.5*strength);
+        glyphGrabberLeft.setPosition(0.5+0.5*strength);
+        glyphGrabberRight.setPosition(0.5-0.5*strength);
     }
 
-    public void lift(boolean mode) {
+    public void lift(double amount) {
         int distance;
-        if (mode) {
-            distance = 1440;
-        } else {
-            distance = -1440;
-        }
+        distance = (int) Math.round(amount * COUNTS_PER_MOTOR_REV * GLYPH_LIFT_RATIO);
         glyphLift.setTargetPosition(distance);
         glyphLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         glyphLift.setPower(1.0);
-        while (glyphLift.isBusy()) {
-
-        }
+        while (glyphLift.isBusy()) {}
         glyphLift.setPower(0);
         glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
@@ -145,15 +140,15 @@ public class Robot {
 
     public void encoders(int mode) {
         if (mode == 0) {
-            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         } else if (mode == 1) {
-            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
     }
 
@@ -161,10 +156,10 @@ public class Robot {
         for (int i = 0; i < motors.length; i ++) {
             motors[i] = Range.clip(motors[i], -1, 1);
         }
-        frontLeft.setPower(motors[0]);
-        frontRight.setPower(motors[1]);
-        backLeft.setPower(motors[2]);
-        backRight.setPower(motors[3]);
+        frontLeftMotor.setPower(motors[0]);
+        frontRightMotor.setPower(motors[1]);
+        backLeftMotor.setPower(motors[2]);
+        backRightMotor.setPower(motors[3]);
     }
 
     public void resetTimer() {
@@ -173,25 +168,25 @@ public class Robot {
     }
 
     public void runToPosition(VectorD distance, double speed) {
-        int target = frontLeft.getCurrentPosition() + (int)(distance.y * COUNTS_PER_INCH);
+        int target = frontLeftMotor.getCurrentPosition() + (int)(distance.y * COUNTS_PER_INCH);
         resetTimer();
-        frontLeft.setTargetPosition(target);
-        frontRight.setTargetPosition(target);
-        backLeft.setTargetPosition(target);
-        backRight.setTargetPosition(target);
+        frontLeftMotor.setTargetPosition(target);
+        frontRightMotor.setTargetPosition(target);
+        backLeftMotor.setTargetPosition(target);
+        backRightMotor.setTargetPosition(target);
 
-        frontLeft.setPower(speed);
-        frontRight.setPower(speed);
-        backLeft.setPower(speed);
-        backRight.setPower(speed);
+        frontLeftMotor.setPower(speed);
+        frontRightMotor.setPower(speed);
+        backLeftMotor.setPower(speed);
+        backRightMotor.setPower(speed);
 
-        while (frontLeft.isBusy()) {
+        while (frontLeftMotor.isBusy()) {
 
         }
 
-        frontLeft.setPower(0);
-        frontRight.setPower(0);
-        backLeft.setPower(0);
-        backRight.setPower(0);
+        frontLeftMotor.setPower(0);
+        frontRightMotor.setPower(0);
+        backLeftMotor.setPower(0);
+        backRightMotor.setPower(0);
     }
 }

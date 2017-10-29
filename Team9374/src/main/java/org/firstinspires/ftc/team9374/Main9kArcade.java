@@ -26,7 +26,7 @@ public class Main9kArcade extends OpMode {
         rStick.getController(gamepad1, 1);
 
         robot.grasp(gamepad1.right_trigger);
-        robot.lift(gamepad1.right_bumper);
+        robot.lift(gamepad1.left_trigger);
 
         int speed = 2;
         int mode = 0;
