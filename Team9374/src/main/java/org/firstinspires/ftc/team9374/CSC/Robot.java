@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 import static org.firstinspires.ftc.team9374.CSC.Spec.boolNeg;
 
 /**
@@ -36,7 +38,7 @@ public class Robot {
             (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double     DRIVE_SPEED             = 0.6;
     static final double     TURN_SPEED              = 0.5;
-    static final double     GLYPH_LIFT_RATIO        = 0.1; //Ratio Between Motor and Spinny thing that lifts manipulator.
+    static final double     GLYPH_LIFT_RATIO        = 3; //Ratio Between Motor and Spinny thing that lifts manipulator.
 
     public int speed = 3;
 
@@ -63,8 +65,8 @@ public class Robot {
         backRightMotor.setDirection(DcMotor.Direction.REVERSE);
         glyphLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        glyphGrabberLeft.setPosition(0.4);
-        glyphGrabberRight.setPosition(0.5);
+        glyphGrabberLeft.setPosition(0.65);
+        glyphGrabberRight.setPosition(0.45);
         speed = 2;
         mode = drive_mode;
     }
@@ -74,15 +76,21 @@ public class Robot {
         glyphGrabberRight.setPosition(0.5-0.5*strength);
     }
 
-    public void lift(double amount) {
-        int distance;
-        distance = (int) Math.round(amount * COUNTS_PER_MOTOR_REV * GLYPH_LIFT_RATIO);
-        glyphLift.setTargetPosition(distance);
-        glyphLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        glyphLift.setPower(1.0);
-        while (glyphLift.isBusy()) {}
-        glyphLift.setPower(0);
-        glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    public void lift(Gamepad gamepad, Telemetry telemetry) {
+        double amount = gamepad.left_trigger;
+        if (gamepad.b) {
+            int distance = (int) (amount * GLYPH_LIFT_RATIO * COUNTS_PER_MOTOR_REV);
+            telemetry.addData("Position", glyphLift.getCurrentPosition());
+            telemetry.addData("Target", distance);
+            telemetry.update();
+            glyphLift.setTargetPosition(distance);
+            glyphLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            glyphLift.setPower(1.0);
+            while (glyphLift.isBusy()) {
+            }
+            glyphLift.setPower(0);
+            glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
     }
 
     public void setSpeed(int speedSetting) {
