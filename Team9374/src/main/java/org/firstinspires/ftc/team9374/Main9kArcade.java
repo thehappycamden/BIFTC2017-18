@@ -27,6 +27,7 @@ public class Main9kArcade extends OpMode {
 
         robot.grasp(gamepad1.right_trigger);
         robot.lift(gamepad1, telemetry);
+        robot.jewel(-gamepad2.left_stick_y);
 
         int speed = 2;
         int mode = 0;

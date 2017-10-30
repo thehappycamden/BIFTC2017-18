@@ -26,7 +26,7 @@ public class Auto9kDrive extends LinearOpMode {
         robot.resetTimer();
         waitForStart();
 
-        while (opModeIsActive() && (robot.runTime.seconds() <= 3.0)) {
+        while (opModeIsActive() && (robot.runTime.seconds() <= 2.0)) {
             movement.set(0, motorSpeed);
             robot.runMotors(robot.getMotors(movement, rotation));
         }

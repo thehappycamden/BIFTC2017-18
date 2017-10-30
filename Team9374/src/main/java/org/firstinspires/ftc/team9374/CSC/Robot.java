@@ -30,6 +30,7 @@ public class Robot {
 
     private Servo glyphGrabberLeft;
     private Servo glyphGrabberRight;
+    private Servo jewelManipulator;
 
     static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
@@ -60,6 +61,7 @@ public class Robot {
         //Servos
         glyphGrabberLeft = hardwareMap.servo.get("GlyphLeft");
         glyphGrabberRight = hardwareMap.servo.get("GlyphRight");
+        jewelManipulator = hardwareMap.servo.get("JewelServo");
 
         frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
         backRightMotor.setDirection(DcMotor.Direction.REVERSE);
@@ -67,6 +69,7 @@ public class Robot {
         glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         glyphGrabberLeft.setPosition(0.65);
         glyphGrabberRight.setPosition(0.45);
+        jewelManipulator.setPosition(0);
         speed = 2;
         mode = drive_mode;
     }
@@ -86,8 +89,7 @@ public class Robot {
             glyphLift.setTargetPosition(distance);
             glyphLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             glyphLift.setPower(1.0);
-            while (glyphLift.isBusy()) {
-            }
+            while (glyphLift.isBusy()) {}
             glyphLift.setPower(0);
             glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
@@ -196,5 +198,9 @@ public class Robot {
         frontRightMotor.setPower(0);
         backLeftMotor.setPower(0);
         backRightMotor.setPower(0);
+    }
+
+    public void jewel(double extension) {
+        jewelManipulator.setPosition(extension);
     }
 }
