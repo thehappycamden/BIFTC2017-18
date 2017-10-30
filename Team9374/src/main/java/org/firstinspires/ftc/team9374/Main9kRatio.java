@@ -25,8 +25,8 @@ public class Main9kRatio extends OpMode {
         lStick.getController(gamepad1, 0);
         rStick.getController(gamepad1, 1);
 
-        robot.grasp(gamepad1.right_trigger);
-        robot.lift(gamepad1, telemetry);
+        robot.grasp(gamepad2.right_trigger);
+        robot.lift(gamepad2, telemetry);
 
         int speed = 2;
         int mode = 0;

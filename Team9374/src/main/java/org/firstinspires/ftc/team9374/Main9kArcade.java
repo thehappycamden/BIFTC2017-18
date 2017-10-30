@@ -25,8 +25,8 @@ public class Main9kArcade extends OpMode {
         lStick.getController(gamepad1, 0);
         rStick.getController(gamepad1, 1);
 
-        robot.grasp(gamepad1.right_trigger);
-        robot.lift(gamepad1, telemetry);
+        robot.grasp(gamepad2.right_trigger);
+        robot.lift(gamepad2, telemetry);
         robot.jewel(-gamepad2.left_stick_y);
 
         int speed = 2;
