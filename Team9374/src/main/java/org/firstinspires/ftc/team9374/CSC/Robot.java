@@ -39,7 +39,7 @@ public class Robot {
             (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double     DRIVE_SPEED             = 0.6;
     static final double     TURN_SPEED              = 0.5;
-    static final double     GLYPH_LIFT_RATIO        = 3; //Ratio Between Motor and Spinny thing that lifts manipulator.
+    static final double     GLYPH_LIFT_RATIO        = 2.5; //Ratio Between Motor and Spinny thing that lifts manipulator.
 
     public int speed = 3;
 
@@ -80,7 +80,7 @@ public class Robot {
     }
 
     public void lift(Gamepad gamepad, Telemetry telemetry) {
-        double amount = gamepad.left_trigger;
+        double amount = gamepad.left_trigger + 0.1;
         if (gamepad.b) {
             int distance = (int) (amount * GLYPH_LIFT_RATIO * COUNTS_PER_MOTOR_REV);
             telemetry.addData("Position", glyphLift.getCurrentPosition());
@@ -105,8 +105,8 @@ public class Robot {
         double bl = 0; // Back-Left
         double br = 0; // Back-Right
         if (mode == 0) {
-            double xVelocity = lStick.x;
-            double yVelocity = lStick.y;
+            double xVelocity = -lStick.x;
+            double yVelocity = -lStick.y;
             double angular = rStick.x;
             fl = yVelocity - xVelocity + angular;
             fr = yVelocity + xVelocity - angular;
