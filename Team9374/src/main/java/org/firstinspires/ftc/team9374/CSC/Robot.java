@@ -32,14 +32,14 @@ public class Robot {
     private Servo glyphGrabberRight;
     private Servo jewelManipulator;
 
-    static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
+    static final double     COUNTS_PER_MOTOR_REV    = 420 ;    // Neverest 60 Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
     static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double     DRIVE_SPEED             = 0.6;
     static final double     TURN_SPEED              = 0.5;
-    static final double     GLYPH_LIFT_RATIO        = 2.5; //Ratio Between Motor and Spinny thing that lifts manipulator.
+    static final double     GLYPH_LIFT_RATIO        = 0.6; //Ratio Between Motor and Spinny thing that lifts manipulator.
 
     public int speed = 3;
 
@@ -80,7 +80,7 @@ public class Robot {
     }
 
     public void lift(Gamepad gamepad, Telemetry telemetry) {
-        double amount = gamepad.left_trigger + 0.1;
+        double amount = gamepad.left_trigger;
         if (gamepad.b) {
             int distance = (int) (amount * GLYPH_LIFT_RATIO * COUNTS_PER_MOTOR_REV);
             telemetry.addData("Position", glyphLift.getCurrentPosition());
