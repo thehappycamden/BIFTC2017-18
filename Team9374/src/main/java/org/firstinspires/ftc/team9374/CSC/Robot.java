@@ -41,9 +41,10 @@ public class Robot {
     static final double     TURN_SPEED              = 0.5;
     static final double     GLYPH_LIFT_RATIO        = 0.6; //Ratio Between Motor and Spinny thing that lifts manipulator.
 
-    public int speed = 3;
-
+    //Special Values
+    public int speed = 2;
     public int mode = 0;
+    public int height_setting = 0; // 0= completely low, 1 = barely, 2 = 1 cube high (1/4 total?) 3 = 2 cubes high (1/1 total)
 
     public ElapsedTime runTime = new ElapsedTime();
 
@@ -81,18 +82,42 @@ public class Robot {
 
     public void lift(Gamepad gamepad, Telemetry telemetry) {
         double amount = gamepad.left_trigger;
-        if (gamepad.b) {
-            int distance = (int) (amount * GLYPH_LIFT_RATIO * COUNTS_PER_MOTOR_REV);
-            telemetry.addData("Position", glyphLift.getCurrentPosition());
-            telemetry.addData("Target", distance);
-            telemetry.update();
-            glyphLift.setTargetPosition(distance);
-            glyphLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            glyphLift.setPower(1.0);
-            while (glyphLift.isBusy()) {}
-            glyphLift.setPower(0);
-            glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        int total = 4000;
+        int distance = 0;
+        if (gamepad.b) {height_setting++;}
+        if (height_setting >= 4 || gamepad.left_trigger > 0.5) {
+            height_setting = 0;
         }
+        switch (height_setting) {
+            case 0:
+                distance = 0;
+                break;
+            case 1:
+                distance = total / 4;
+                break;
+            case 2:
+                distance = total / 2 + 250;
+                break;
+            case 3:
+                distance = total;
+                break;
+        }
+        telemetry.addData("Position", glyphLift.getCurrentPosition());
+        telemetry.addData("Target", distance);
+        telemetry.update();
+        /*if (gamepad.b) {
+            /**int distance = (int) (amount * GLYPH_LIFT_RATIO * COUNTS_PER_MOTOR_REV);
+             telemetry.addData("Position", glyphLift.getCurrentPosition());
+             telemetry.addData("Target", distance);
+             telemetry.update();
+             glyphLift.setTargetPosition(distance);
+        }*/
+        glyphLift.setTargetPosition(distance);
+        glyphLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        glyphLift.setPower(1.0);
+        while (glyphLift.isBusy()) {}
+        glyphLift.setPower(0);
+        glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void setSpeed(int speedSetting) {
@@ -105,7 +130,7 @@ public class Robot {
         double bl = 0; // Back-Left
         double br = 0; // Back-Right
         if (mode == 0) {
-            double xVelocity = -lStick.x;
+            double xVelocity = lStick.x;
             double yVelocity = -lStick.y;
             double angular = rStick.x;
             fl = yVelocity - xVelocity + angular;
