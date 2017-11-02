@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.team9374.CSC;
 
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -32,6 +33,8 @@ public class Robot {
     private Servo glyphGrabberRight;
     private Servo jewelManipulator;
 
+    private ColorSensor jewelColorSensor;
+
     static final double     COUNTS_PER_MOTOR_REV    = 420 ;    // Neverest 60 Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
     static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
@@ -63,6 +66,9 @@ public class Robot {
         glyphGrabberLeft = hardwareMap.servo.get("GlyphLeft");
         glyphGrabberRight = hardwareMap.servo.get("GlyphRight");
         jewelManipulator = hardwareMap.servo.get("JewelServo");
+
+        //Color
+        jewelColorSensor = hardwareMap.colorSensor.get("JewelColor");
 
         frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
         backRightMotor.setDirection(DcMotor.Direction.REVERSE);
@@ -143,10 +149,13 @@ public class Robot {
             bl = lStick.y - lStick.x;
             br = rStick.y + rStick.x;
         } else if (mode == 2) {
-            fl = lStick.y * lStick.x;
-            bl = lStick.y * lStick.x;
-            fr = lStick.y * (-lStick.x);
-            br = lStick.y * (-lStick.x);
+            double xVelocity = rStick.x;
+            double yVelocity = -lStick.y;
+            double angular = rStick.x;
+            fl = yVelocity - xVelocity + angular;
+            fr = yVelocity + xVelocity - angular;
+            bl = yVelocity + xVelocity + angular;
+            br = yVelocity - xVelocity - angular;
         } else if (mode == 3) {
             fl = lStick.x;
             fr = lStick.y;
@@ -225,7 +234,14 @@ public class Robot {
         backRightMotor.setPower(0);
     }
 
-    public void jewel(double extension) {
+    public void jewelArm(Telemetry telemetry, double extension) {
         jewelManipulator.setPosition(extension);
+        int red = jewelColorSensor.red();
+        int green = jewelColorSensor.green();
+        int blue = jewelColorSensor.blue();
+        telemetry.addData("R:", red);
+        telemetry.addData("G:", green);
+        telemetry.addData("B:", blue);
+        telemetry.update();
     }
 }

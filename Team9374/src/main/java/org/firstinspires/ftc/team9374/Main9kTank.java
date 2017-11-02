@@ -29,7 +29,6 @@ public class Main9kTank extends OpMode {
         robot.lift(gamepad2, telemetry);
 
         int speed = 2;
-        int mode = 0;
         if (gamepad1.a) {
             speed = 1;
         } else if (gamepad1.x) {
@@ -38,7 +37,7 @@ public class Main9kTank extends OpMode {
             speed = 3;
         }
 
-        robot.setSpeed(speed);
-        robot.runMotors(robot.getMotors(0, lStick, rStick));
+        robot.speed = speed;
+        robot.runMotors(robot.getMotors(1, lStick, rStick));
     }
 }

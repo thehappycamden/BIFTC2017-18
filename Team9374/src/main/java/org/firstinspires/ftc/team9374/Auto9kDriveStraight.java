@@ -12,9 +12,9 @@ import org.firstinspires.ftc.team9374.CSC.VectorD;
  */
 
 @Autonomous(name="9kDriveStraight",group="9kNoSkill")
-public class Auto9kDrive extends LinearOpMode {
+public class Auto9kDriveStraight extends LinearOpMode {
     private VectorD movement = new VectorD(0, 1);
-    private VectorD rotation = new VectorD(0, 0);
+    private VectorD rotation = new VectorD(0);
 
     private Robot robot = new Robot();
 

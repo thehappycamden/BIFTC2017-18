@@ -33,7 +33,7 @@ public class Main9kDemon extends OpMode {
             speed = 3;
         }
 
-        robot.setSpeed(speed);
+        robot.speed = speed;
         robot.runMotors(robot.getMotors(3, robot.DemonConfig(0, gamepad1), robot.DemonConfig(1, gamepad1)));
     }
 }
