@@ -77,6 +77,7 @@ public class Robot {
         glyphGrabberLeft.setPosition(0.65);
         glyphGrabberRight.setPosition(0.45);
         jewelManipulator.setPosition(0);
+        jewelColorSensor.enableLed(true);
         speed = 2;
         mode = drive_mode;
     }
@@ -239,9 +240,11 @@ public class Robot {
         int red = jewelColorSensor.red();
         int green = jewelColorSensor.green();
         int blue = jewelColorSensor.blue();
-        telemetry.addData("R:", red);
-        telemetry.addData("G:", green);
-        telemetry.addData("B:", blue);
+        int alpha = jewelColorSensor.alpha();
+        telemetry.addData("R", red);
+        telemetry.addData("G", green);
+        telemetry.addData("B", blue);
+        telemetry.addData("A", alpha);
         telemetry.update();
     }
 }
