@@ -18,7 +18,7 @@ public class Main9kDemon extends OpMode {
     public Robot robot = new Robot();
 
     public void init() {
-        robot.init(hardwareMap, 3);
+        robot.init(hardwareMap, true, true, true);
     }
 
     public void loop() {

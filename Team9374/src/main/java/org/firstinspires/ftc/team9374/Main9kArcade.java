@@ -18,19 +18,14 @@ public class Main9kArcade extends OpMode {
     public Robot robot = new Robot();
 
     public void init() {
-        robot.init(hardwareMap, 0);
+        robot.init(hardwareMap, true, true, true);
     }
 
     public void loop() {
         lStick.getController(gamepad1, 0);
         rStick.getController(gamepad1, 1);
 
-        robot.grasp(gamepad2.right_trigger);
-        robot.lift(gamepad2, telemetry);
-        robot.jewelArm(telemetry, -gamepad2.left_stick_y);
-
         int speed = 1;
-        int mode = 0;
         if (gamepad1.a) {
             speed = 1;
         } else if (gamepad1.x) {
@@ -41,5 +36,9 @@ public class Main9kArcade extends OpMode {
 
         robot.speed = speed;
         robot.runMotors(robot.getMotors(0, lStick, rStick));
+
+        robot.grasp(gamepad2.right_trigger);
+        robot.lift(gamepad2, telemetry);
+        robot.jewelArm(telemetry, -gamepad2.left_stick_y);
     }
 }

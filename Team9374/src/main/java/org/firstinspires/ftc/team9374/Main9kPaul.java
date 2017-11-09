@@ -18,7 +18,7 @@ public class Main9kPaul extends OpMode {
     public Robot robot = new Robot();
 
     public void init() {
-        robot.init(hardwareMap, 0);
+        robot.init(hardwareMap, true, true, true);
         robot.mode = 2;
     }
 

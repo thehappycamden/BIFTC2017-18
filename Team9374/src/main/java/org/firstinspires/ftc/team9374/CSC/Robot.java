@@ -33,6 +33,10 @@ public class Robot {
     private Servo glyphGrabberRight;
     private Servo jewelManipulator;
 
+    public boolean drive_enabled;
+    public boolean glyph_enabled;
+    public boolean jewel_enabled;
+
     private ColorSensor jewelColorSensor;
 
     static final double     COUNTS_PER_MOTOR_REV    = 420 ;    // Neverest 60 Motor Encoder
@@ -51,67 +55,94 @@ public class Robot {
 
     public ElapsedTime runTime = new ElapsedTime();
 
-    public void init(HardwareMap hardwareMap, int drive_mode) {
+    public void init(HardwareMap hardwareMap, boolean drive, boolean glyph, boolean jewel) {
+        drive_enabled = drive;
+        glyph_enabled = glyph;
+        jewel_enabled = jewel;
         /******************************************\
         |*************Initializations**************|
         \******************************************/
         //Motors
-        frontLeftMotor = hardwareMap.dcMotor.get("DriveFrontLeft");
-        frontRightMotor = hardwareMap.dcMotor.get("DriveFrontRight");
-        backLeftMotor = hardwareMap.dcMotor.get("DriveBackLeft");
-        backRightMotor = hardwareMap.dcMotor.get("DriveBackRight");
-        glyphLift = hardwareMap.dcMotor.get("GlyphCenter");
+        if (drive) {
+            frontLeftMotor = hardwareMap.dcMotor.get("DriveFrontLeft");
+            frontRightMotor = hardwareMap.dcMotor.get("DriveFrontRight");
+            backLeftMotor = hardwareMap.dcMotor.get("DriveBackLeft");
+            backRightMotor = hardwareMap.dcMotor.get("DriveBackRight");
+        }
+        if (glyph) {
+            glyphLift = hardwareMap.dcMotor.get("GlyphCenter");
+        }
 
         //Servos
-        glyphGrabberLeft = hardwareMap.servo.get("GlyphLeft");
-        glyphGrabberRight = hardwareMap.servo.get("GlyphRight");
-        jewelManipulator = hardwareMap.servo.get("JewelServo");
+        if (glyph) {
+            glyphGrabberLeft = hardwareMap.servo.get("GlyphLeft");
+            glyphGrabberRight = hardwareMap.servo.get("GlyphRight");
+        }
+        if (jewel) {
+            jewelManipulator = hardwareMap.servo.get("JewelServo");
+        }
 
         //Color
-        jewelColorSensor = hardwareMap.colorSensor.get("JewelColor");
-
-        frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
-        backRightMotor.setDirection(DcMotor.Direction.REVERSE);
-        glyphLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        glyphGrabberLeft.setPosition(0.65);
-        glyphGrabberRight.setPosition(0.45);
-        jewelManipulator.setPosition(0);
-        jewelColorSensor.enableLed(true);
+        if (jewel) {
+            jewelColorSensor = hardwareMap.colorSensor.get("JewelColor");
+        }
+        if (drive) {
+            frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
+            backRightMotor.setDirection(DcMotor.Direction.REVERSE);
+        }
+        if (glyph) {
+            glyphLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            glyphGrabberLeft.setPosition(0.65);
+            glyphGrabberRight.setPosition(0.45);
+        }
+        if (jewel) {
+            jewelManipulator.setPosition(0);
+            jewelColorSensor.enableLed(true);
+        }
         speed = 2;
-        mode = drive_mode;
+        mode = 0;
     }
 
     public void grasp(double strength) {
-        glyphGrabberLeft.setPosition(0.5+0.5*strength);
-        glyphGrabberRight.setPosition(0.5-0.5*strength);
+        if (glyph_enabled) {
+            glyphGrabberLeft.setPosition(0.5 + 0.5 * strength);
+            glyphGrabberRight.setPosition(0.5 - 0.5 * strength);
+        }
     }
 
     public void lift(Gamepad gamepad, Telemetry telemetry) {
-        double amount = gamepad.left_trigger;
-        int total = 4000;
-        int distance = 0;
-        if (gamepad.b) {height_setting++;}
-        if (height_setting >= 4 || gamepad.left_trigger > 0.5) {
-            height_setting = 0;
-        }
-        switch (height_setting) {
-            case 0:
-                distance = 0;
-                break;
-            case 1:
-                distance = total / 4;
-                break;
-            case 2:
-                distance = total / 2 + 250;
-                break;
-            case 3:
-                distance = total;
-                break;
-        }
-        telemetry.addData("Position", glyphLift.getCurrentPosition());
-        telemetry.addData("Target", distance);
-        telemetry.update();
+        if (glyph_enabled) {
+            if (!glyphLift.isBusy()) {
+                glyphLift.setPower(0);
+                glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
+            double amount = gamepad.left_trigger;
+            int total = 3900;
+            int distance = 0;
+            if (gamepad.b) {
+                height_setting++;
+            }
+            if (height_setting >= 4 || gamepad.left_trigger > 0.5) {
+                height_setting = 0;
+            }
+            switch (height_setting) {
+                case 0:
+                    distance = 0;
+                    break;
+                case 1:
+                    distance = total / 4;
+                    break;
+                case 2:
+                    distance = total / 2 + 250;
+                    break;
+                case 3:
+                    distance = total;
+                    break;
+            }
+            telemetry.addData("Position", glyphLift.getCurrentPosition());
+            telemetry.addData("Target", distance);
+            telemetry.update();
         /*if (gamepad.b) {
             /**int distance = (int) (amount * GLYPH_LIFT_RATIO * COUNTS_PER_MOTOR_REV);
              telemetry.addData("Position", glyphLift.getCurrentPosition());
@@ -119,16 +150,42 @@ public class Robot {
              telemetry.update();
              glyphLift.setTargetPosition(distance);
         }*/
-        glyphLift.setTargetPosition(distance);
-        glyphLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        glyphLift.setPower(1.0);
-        while (glyphLift.isBusy()) {}
-        glyphLift.setPower(0);
-        glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            glyphLift.setTargetPosition(distance);
+            glyphLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            glyphLift.setPower(1.0);
+        }
     }
 
-    public void setSpeed(int speedSetting) {
-        speed = speedSetting;
+    public void lift_manual(int height, Telemetry telemetry) {
+        if (glyph_enabled) {
+            if (!glyphLift.isBusy()) {
+                glyphLift.setPower(0);
+                glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
+            int total = 3900;
+            int distance = 0;
+            height_setting = height;
+            switch (height_setting) {
+                case 0:
+                    distance = 0;
+                    break;
+                case 1:
+                    distance = total / 4;
+                    break;
+                case 2:
+                    distance = total / 2 + 250;
+                    break;
+                case 3:
+                    distance = total;
+                    break;
+            }
+            telemetry.addData("Position", glyphLift.getCurrentPosition());
+            telemetry.addData("Target", distance);
+            telemetry.update();
+            glyphLift.setTargetPosition(distance);
+            glyphLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            glyphLift.setPower(1.0);
+        }
     }
 
     public double[] getMotors(int mode, VectorD lStick, VectorD rStick) {
@@ -138,7 +195,7 @@ public class Robot {
         double br = 0; // Back-Right
         if (mode == 0) {
             double xVelocity = lStick.x;
-            double yVelocity = -lStick.y;
+            double yVelocity = lStick.y;
             double angular = rStick.x;
             fl = yVelocity - xVelocity + angular;
             fr = yVelocity + xVelocity - angular;
@@ -183,28 +240,16 @@ public class Robot {
         return getMotors(mode, lStick, rStick);
     }
 
-    public void encoders(int mode) {
-        if (mode == 0) {
-            frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        } else if (mode == 1) {
-            frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-    }
-
     public void runMotors(double[] motors) {
-        for (int i = 0; i < motors.length; i ++) {
-            motors[i] = Range.clip(motors[i], -1, 1);
+        if (drive_enabled) {
+            for (int i = 0; i < motors.length; i++) {
+                motors[i] = Range.clip(motors[i]/speed, -1, 1);
+            }
+            frontLeftMotor.setPower(motors[0]);
+            frontRightMotor.setPower(motors[1]);
+            backLeftMotor.setPower(motors[2]);
+            backRightMotor.setPower(motors[3]);
         }
-        frontLeftMotor.setPower(motors[0]);
-        frontRightMotor.setPower(motors[1]);
-        backLeftMotor.setPower(motors[2]);
-        backRightMotor.setPower(motors[3]);
     }
 
     public void resetTimer() {
@@ -212,7 +257,7 @@ public class Robot {
         runTime.startTime();
     }
 
-    public void runToPosition(VectorD distance, double speed) {
+    /**public void runToPosition(VectorD distance, double speed) {
         int target = frontLeftMotor.getCurrentPosition() + (int)(distance.y * COUNTS_PER_INCH);
         resetTimer();
         frontLeftMotor.setTargetPosition(target);
@@ -233,18 +278,20 @@ public class Robot {
         frontRightMotor.setPower(0);
         backLeftMotor.setPower(0);
         backRightMotor.setPower(0);
-    }
+    }*/
 
     public void jewelArm(Telemetry telemetry, double extension) {
-        jewelManipulator.setPosition(extension);
-        int red = jewelColorSensor.red();
-        int green = jewelColorSensor.green();
-        int blue = jewelColorSensor.blue();
-        int alpha = jewelColorSensor.alpha();
-        telemetry.addData("R", red);
-        telemetry.addData("G", green);
-        telemetry.addData("B", blue);
-        telemetry.addData("A", alpha);
-        telemetry.update();
+        if (jewel_enabled) {
+            jewelManipulator.setPosition(extension);
+            int red = jewelColorSensor.red();
+            int green = jewelColorSensor.green();
+            int blue = jewelColorSensor.blue();
+            int alpha = jewelColorSensor.alpha();
+            telemetry.addData("R", red);
+            telemetry.addData("G", green);
+            telemetry.addData("B", blue);
+            telemetry.addData("A", alpha);
+            telemetry.update();
+        }
     }
 }

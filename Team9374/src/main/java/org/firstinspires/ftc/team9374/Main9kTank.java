@@ -18,7 +18,7 @@ public class Main9kTank extends OpMode {
     public Robot robot = new Robot();
 
     public void init() {
-        robot.init(hardwareMap, 1);
+        robot.init(hardwareMap, true, true, true);
     }
 
     public void loop() {
