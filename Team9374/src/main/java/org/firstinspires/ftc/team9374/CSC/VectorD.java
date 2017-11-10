@@ -135,4 +135,10 @@ public class VectorD {
         y = 0;
         z = 0;
     }
+
+    public void mult(double a) {
+        x *= a;
+        y *= a;
+        z *= a;
+    }
 }

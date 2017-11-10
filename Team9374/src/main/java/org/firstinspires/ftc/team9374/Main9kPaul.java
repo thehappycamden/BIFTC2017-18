@@ -27,7 +27,7 @@ public class Main9kPaul extends OpMode {
         rStick.getController(gamepad1, 0);
 
         robot.grasp(gamepad2.right_trigger);
-        robot.lift(gamepad2, telemetry);
+        robot.lift(gamepad2);
         robot.jewelArm(telemetry, -gamepad2.left_stick_y);
 
         int speed = 1;

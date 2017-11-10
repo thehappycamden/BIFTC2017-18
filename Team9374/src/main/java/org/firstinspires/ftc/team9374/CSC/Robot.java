@@ -37,16 +37,7 @@ public class Robot {
     public boolean glyph_enabled;
     public boolean jewel_enabled;
 
-    private ColorSensor jewelColorSensor;
-
-    static final double     COUNTS_PER_MOTOR_REV    = 420 ;    // Neverest 60 Motor Encoder
-    static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
-    static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
-    static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-            (WHEEL_DIAMETER_INCHES * 3.1415);
-    static final double     DRIVE_SPEED             = 0.6;
-    static final double     TURN_SPEED              = 0.5;
-    static final double     GLYPH_LIFT_RATIO        = 0.6; //Ratio Between Motor and Spinny thing that lifts manipulator.
+    public ColorSensor jewelColorSensor;
 
     //Special Values
     public int speed = 2;
@@ -111,7 +102,7 @@ public class Robot {
         }
     }
 
-    public void lift(Gamepad gamepad, Telemetry telemetry) {
+    public void lift(Gamepad gamepad) {
         if (glyph_enabled) {
             if (!glyphLift.isBusy()) {
                 glyphLift.setPower(0);
@@ -140,9 +131,6 @@ public class Robot {
                     distance = total;
                     break;
             }
-            telemetry.addData("Position", glyphLift.getCurrentPosition());
-            telemetry.addData("Target", distance);
-            telemetry.update();
         /*if (gamepad.b) {
             /**int distance = (int) (amount * GLYPH_LIFT_RATIO * COUNTS_PER_MOTOR_REV);
              telemetry.addData("Position", glyphLift.getCurrentPosition());
@@ -156,7 +144,7 @@ public class Robot {
         }
     }
 
-    public void lift_manual(int height, Telemetry telemetry) {
+    public void lift_manual(int height) {
         if (glyph_enabled) {
             if (!glyphLift.isBusy()) {
                 glyphLift.setPower(0);
@@ -179,9 +167,6 @@ public class Robot {
                     distance = total;
                     break;
             }
-            telemetry.addData("Position", glyphLift.getCurrentPosition());
-            telemetry.addData("Target", distance);
-            telemetry.update();
             glyphLift.setTargetPosition(distance);
             glyphLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             glyphLift.setPower(1.0);
@@ -280,18 +265,36 @@ public class Robot {
         backRightMotor.setPower(0);
     }*/
 
-    public void jewelArm(Telemetry telemetry, double extension) {
+    public boolean jewelArm(Telemetry telemetry, double extension) {
         if (jewel_enabled) {
             jewelManipulator.setPosition(extension);
+            ElapsedTime timeToExtend = new ElapsedTime();
+            while (timeToExtend.seconds() < 1) {}
             int red = jewelColorSensor.red();
             int green = jewelColorSensor.green();
             int blue = jewelColorSensor.blue();
             int alpha = jewelColorSensor.alpha();
+            String color;
+            boolean isRed;
+            if (red > blue) {
+                color = "Red";
+                isRed = true;
+            } else if (blue > red) {
+                color = "Blue";
+                isRed = false;
+            } else {
+                color = "None";
+                isRed = false;
+            }
+            telemetry.addData("Color", color);
             telemetry.addData("R", red);
             telemetry.addData("G", green);
             telemetry.addData("B", blue);
             telemetry.addData("A", alpha);
+
             telemetry.update();
-        }
+
+            return isRed;
+        } else {return false;}
     }
 }
