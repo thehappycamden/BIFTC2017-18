@@ -108,7 +108,6 @@ public class Robot {
                 glyphLift.setPower(0);
                 glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
-            double amount = gamepad.left_trigger;
             int total = 3900;
             int distance = 0;
             if (gamepad.b) {
