@@ -21,7 +21,7 @@ public class Auto9kManipulateJewelsRed extends LinearOpMode {
     private double motorSpeed = 1.0;
 
     public void runOpMode() {
-        robot.init(hardwareMap, true, true, true);
+        robot.init(hardwareMap, true, true, true, false);
         robot.speed = 1;
         robot.resetTimer();
         waitForStart();

@@ -18,7 +18,7 @@ public class Main9kArcade extends OpMode {
     public Robot robot = new Robot();
 
     public void init() {
-        robot.init(hardwareMap, true, true, true);
+        robot.init(hardwareMap, true, true, true, false);
     }
 
     public void loop() {
@@ -36,7 +36,7 @@ public class Main9kArcade extends OpMode {
 
         robot.speed = speed;
         robot.runMotors(robot.getMotors(0, lStick, rStick));
-        robot.grasp(gamepad2.right_trigger);
+        robot.grasp(gamepad2.right_trigger, gamepad2.left_trigger);
         robot.lift(gamepad2);
     }
 }

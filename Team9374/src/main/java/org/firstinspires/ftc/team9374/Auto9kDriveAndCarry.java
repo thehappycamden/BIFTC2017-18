@@ -20,26 +20,26 @@ public class Auto9kDriveAndCarry extends LinearOpMode {
     private double motorSpeed = 1.0;
 
     public void runOpMode() {
-        robot.init(hardwareMap, true, true, true);
+        robot.init(hardwareMap, true, true, true, false);
         robot.speed = 1;
         robot.resetTimer();
-        robot.grasp(1.0);
+        robot.grasp(1.0, 0);
         robot.lift_manual(0);
 
         waitForStart();
 
-        robot.grasp(0.0);
+        robot.grasp(0.0, 0);
         robot.lift_manual(1);
         while (opModeIsActive() && (robot.runTime.seconds() <= 2.0)) {
             robot.runMotors(robot.getMotors(movement, rotation));
         }
-        robot.grasp(1.0);
+        robot.grasp(1.0, 0);
         robot.lift_manual(0);
         movement.y = -1.0;
         while (opModeIsActive() && (robot.runTime.seconds() <= 0.2)) {
             robot.runMotors(robot.getMotors(movement, rotation));
         }
-        robot.grasp(0.0);
+        robot.grasp(0.0, 0);
         movement.set(0, 0);
     }
 }

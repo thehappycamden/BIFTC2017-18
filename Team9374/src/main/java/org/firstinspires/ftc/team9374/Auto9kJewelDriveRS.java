@@ -10,8 +10,8 @@ import org.firstinspires.ftc.team9374.CSC.VectorD;
  * Created by lego7_000 on 11/10/2017.
  */
 
-@Autonomous(name="9kJewelManipulatedBlue", group="9kBase")
-public class Auto9kManipulateJewelsBlue extends LinearOpMode {
+@Autonomous(name="9kDriveJewel RS", group="9kComposite")
+public class Auto9kJewelDriveRS extends LinearOpMode {
     private VectorD movement = new VectorD(0, 1.0);
     private VectorD rotation = new VectorD(0);
 
@@ -24,22 +24,21 @@ public class Auto9kManipulateJewelsBlue extends LinearOpMode {
         robot.speed = 1;
         robot.resetTimer();
         waitForStart();
-
+        double distance_to_travel = 36;
         movement.mult(motorSpeed);
 
         boolean isRed = robot.jewelArm(telemetry, 1);
 
-        if (isRed) {
-            movement.mult(-1);
+        if (!isRed) {
+            distance_to_travel += 2;
+            robot.runToPosition(-2, 1);
+        } else {
+            distance_to_travel -= 2;
+            robot.runToPosition(2, 1);
         }
-
-        robot.resetTimer();
-        while (robot.runTime.seconds() < 0.2) {
-            robot.runMotors(robot.getMotors(movement, rotation));
-        }
-        movement.set(0, 0);
-        robot.runMotors(robot.getMotors(movement, rotation));
 
         robot.jewelArm(telemetry, 0);
+
+        robot.runToPosition(distance_to_travel, 1);
     }
 }

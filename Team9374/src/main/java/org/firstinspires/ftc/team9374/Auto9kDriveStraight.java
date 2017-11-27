@@ -18,19 +18,13 @@ public class Auto9kDriveStraight extends LinearOpMode {
 
     private Robot robot = new Robot();
 
-    private double motorSpeed = 1.0;
+    private double motorSpeed = 0.5;
 
     public void runOpMode() {
-        robot.init(hardwareMap, true, true, true);
+        robot.init(hardwareMap, true, false, false, false);
         robot.speed = 1;
         robot.resetTimer();
         waitForStart();
-
-        while (opModeIsActive() && (robot.runTime.seconds() <= 2.0)) {
-            movement.set(0, motorSpeed);
-            robot.runMotors(robot.getMotors(movement, rotation));
-        }
-
-        movement.set(0, 0);
+        robot.runToPosition(36, motorSpeed);
     }
 }

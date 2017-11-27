@@ -8,8 +8,21 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.matrices.*;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
+import org.firstinspires.ftc.robotcore.external.navigation.VuMarkInstanceId;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 
+import static com.sun.tools.javac.util.Constants.format;
 import static org.firstinspires.ftc.team9374.CSC.Spec.boolNeg;
 
 /**
@@ -43,10 +56,18 @@ public class Robot {
     public int speed = 2;
     public int mode = 0;
     public int height_setting = 0; // 0= completely low, 1 = barely, 2 = 1 cube high (1/4 total?) 3 = 2 cubes high (1/1 total)
+    private boolean prevStateBButton = false;
+
+    public int TICKS_PER_REVOLUTION = 280;
+    public int WHEEL_DIAMETER_IN_INCHES = 4;
+    public double WHEEL_CIRCUMFERENCE_IN_INCHES = WHEEL_DIAMETER_IN_INCHES*Math.PI;
+    public double TICKS_PER_INCH = TICKS_PER_REVOLUTION / WHEEL_DIAMETER_IN_INCHES;
+
+    public VuforiaEngine vuforia;
 
     public ElapsedTime runTime = new ElapsedTime();
 
-    public void init(HardwareMap hardwareMap, boolean drive, boolean glyph, boolean jewel) {
+    public void init(HardwareMap hardwareMap, boolean drive, boolean glyph, boolean jewel, boolean vis) {
         drive_enabled = drive;
         glyph_enabled = glyph;
         jewel_enabled = jewel;
@@ -56,9 +77,17 @@ public class Robot {
         //Motors
         if (drive) {
             frontLeftMotor = hardwareMap.dcMotor.get("DriveFrontLeft");
+            frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             frontRightMotor = hardwareMap.dcMotor.get("DriveFrontRight");
+            frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             backLeftMotor = hardwareMap.dcMotor.get("DriveBackLeft");
+            backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             backRightMotor = hardwareMap.dcMotor.get("DriveBackRight");
+            backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
         if (glyph) {
             glyphLift = hardwareMap.dcMotor.get("GlyphCenter");
@@ -84,8 +113,8 @@ public class Robot {
         if (glyph) {
             glyphLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            glyphGrabberLeft.setPosition(0.65);
-            glyphGrabberRight.setPosition(0.45);
+            glyphGrabberLeft.setPosition(0.5);
+            glyphGrabberRight.setPosition(0.65);
         }
         if (jewel) {
             jewelManipulator.setPosition(0);
@@ -93,12 +122,87 @@ public class Robot {
         }
         speed = 2;
         mode = 0;
+        if (vis) {
+            vuforia = new VuforiaEngine(hardwareMap);
+        }
     }
 
-    public void grasp(double strength) {
+    public class VuforiaEngine {
+
+        public VuforiaLocalizer vuforia;
+        public VuforiaTrackable relicTemplate;
+        public VuforiaTrackables relicTrackables;
+
+        public VuforiaEngine(HardwareMap hardwareMap) {
+            int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+            VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+
+            // OR...  Do Not Activate the Camera Monitor View, to save power
+            // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+        /*
+         * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
+         * 'parameters.vuforiaLicenseKey' is initialized is for illustration only, and will not function.
+         * A Vuforia 'Development' license key, can be obtained free of charge from the Vuforia developer
+         * web site at https://developer.vuforia.com/license-manager.
+         *
+         * Vuforia license keys are always 380 characters long, and look as if they contain mostly
+         * random data. As an example, here is a example of a fragment of a valid key:
+         *      ... yIgIzTqZ4mWjk9wd3cZO9T1axEqzuhxoGlfOOI2dRzKS4T0hQ8kT ...
+         * Once you've obtained a license key, copy the string from the Vuforia web site
+         * and paste it in to your code onthe next line, between the double quotes.
+         */
+            parameters.vuforiaLicenseKey = "AWfJQ6X/////AAAAGbJyF5FnvUsbtPt9EQOYHYNMNUKnV2cu28MZpZNKFdTvW6zcVwx7omhxqPMdDnwcy7yAjCyZf41jmO/8rvRlz93l64jgV1nGIQm9vxYGFnTUHweu4QklmGo7UF9hqsjCToPhT/E3jJKzwBwivjIq5X7m2QjHYl58e8FY0FrgLuijAFrGJb0JvAJ+OGuISAPnjWNzpNHG91CyHMgKf56/31ogx46FkqmUefurY0Znl8Dgt+HGQ9MVt4hRVw+9Fo+Uiy9GqzMTKCj1Nw7DjG52A9gcTuTxBSeqRtqgSwv+OB/T5j0UFBUWwjbh+k9nPFugdzYu+rb1THsrstP5w7C5SpsjQz1SFoFqnhdnxTJKSN31";
+
+        /*
+         * We also indicate which camera on the RC that we wish to use.
+         * Here we chose the back (HiRes) camera (for greater range), but
+         * for a competition robot, the front camera might be more convenient.
+         */
+            parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+            this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
+
+            /**
+             * Load the data set containing the VuMarks for Relic Recovery. There's only one trackable
+             * in this data set: all three of the VuMarks in the game were created from this one template,
+             * but differ in their instance id information.
+             * @see VuMarkInstanceId
+             */
+            relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
+            relicTemplate = relicTrackables.get(0);
+            relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
+
+            relicTrackables.activate();
+        }
+
+        public String getPattern() {
+
+            RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
+            if (RelicRecoveryVuMark.LEFT == vuMark) {
+                return "left";
+            } else if (vuMark == RelicRecoveryVuMark.CENTER) {
+                return "center";
+            } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
+                return "right";
+            } else {
+                return "unknown";
+            }
+        }
+    }
+
+    public void grasp(double strength, double strength2) {
         if (glyph_enabled) {
-            glyphGrabberLeft.setPosition(0.5 + 0.5 * strength);
-            glyphGrabberRight.setPosition(0.5 - 0.5 * strength);
+            double leftStrength;//0+ or 0.5+
+            double rightStrength;//1- or 0.5-
+            if (strength2 > strength) {
+                leftStrength = Range.clip(0.65 - 0.5 * strength2, 0, 1);
+                rightStrength = Range.clip(0.45 + 0.5 * strength2, 0, 1);
+            } else {
+                leftStrength = Range.clip(0.65 + 0.5 * strength, 0, 1);
+                rightStrength = Range.clip(0.45 - 0.5*strength, 0, 1);
+            }
+            glyphGrabberLeft.setPosition(leftStrength);
+            glyphGrabberRight.setPosition(rightStrength);
         }
     }
 
@@ -108,12 +212,12 @@ public class Robot {
                 glyphLift.setPower(0);
                 glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
-            int total = 3900;
+            int total = 4750;
             int distance = 0;
-            if (gamepad.b) {
+            if (gamepad.b && !prevStateBButton) {
                 height_setting++;
             }
-            if (height_setting >= 4 || gamepad.left_trigger > 0.5) {
+            if (height_setting >= 4 || gamepad.left_bumper) {
                 height_setting = 0;
             }
             switch (height_setting) {
@@ -140,6 +244,7 @@ public class Robot {
             glyphLift.setTargetPosition(distance);
             glyphLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             glyphLift.setPower(1.0);
+            prevStateBButton = gamepad.b;
         }
     }
 
@@ -149,7 +254,7 @@ public class Robot {
                 glyphLift.setPower(0);
                 glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
-            int total = 3900;
+            int total = 4750;
             int distance = 0;
             height_setting = height;
             switch (height_setting) {
@@ -238,16 +343,19 @@ public class Robot {
 
     public void resetTimer() {
         runTime.reset();
-        runTime.startTime();
     }
 
-    /**public void runToPosition(VectorD distance, double speed) {
-        int target = frontLeftMotor.getCurrentPosition() + (int)(distance.y * COUNTS_PER_INCH);
+    public void runToPosition(double distance, double speed) {
+        int target = frontLeftMotor.getCurrentPosition() + (int)(distance * TICKS_PER_INCH);
         resetTimer();
         frontLeftMotor.setTargetPosition(target);
         frontRightMotor.setTargetPosition(target);
         backLeftMotor.setTargetPosition(target);
         backRightMotor.setTargetPosition(target);
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         frontLeftMotor.setPower(speed);
         frontRightMotor.setPower(speed);
@@ -255,14 +363,23 @@ public class Robot {
         backRightMotor.setPower(speed);
 
         while (frontLeftMotor.isBusy()) {
-
+            Thread.yield();
         }
 
         frontLeftMotor.setPower(0);
         frontRightMotor.setPower(0);
         backLeftMotor.setPower(0);
         backRightMotor.setPower(0);
-    }*/
+
+        frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
 
     public boolean jewelArm(Telemetry telemetry, double extension) {
         if (jewel_enabled) {
