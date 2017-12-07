@@ -30,10 +30,10 @@ public class Auto9kJewelDriveRN extends LinearOpMode {
         boolean isRed = robot.jewelArm(telemetry, 1);
 
         if (!isRed) {
-            distance_to_travel -= 2;
+            distance_to_travel += -2;
             robot.runToPosition(-2, 1);
         } else {
-            distance_to_travel += 2;
+            distance_to_travel -= -2;
             robot.runToPosition(2, 1);
         }
 

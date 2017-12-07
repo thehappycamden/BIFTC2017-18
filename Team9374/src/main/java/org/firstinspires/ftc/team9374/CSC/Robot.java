@@ -41,10 +41,13 @@ public class Robot {
     private DcMotor backLeftMotor;
     private DcMotor backRightMotor;
     private DcMotor glyphLift;
+    private DcMotor relicArm;
 
     private Servo glyphGrabberLeft;
     private Servo glyphGrabberRight;
     private Servo jewelManipulator;
+    private Servo relicGrip;
+    private Servo relicLift;
 
     public boolean drive_enabled;
     public boolean glyph_enabled;
@@ -92,6 +95,9 @@ public class Robot {
         if (glyph) {
             glyphLift = hardwareMap.dcMotor.get("GlyphCenter");
         }
+        relicArm = hardwareMap.dcMotor.get("RelicArm");
+        relicArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        relicArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //Servos
         if (glyph) {
@@ -101,6 +107,8 @@ public class Robot {
         if (jewel) {
             jewelManipulator = hardwareMap.servo.get("JewelServo");
         }
+        relicGrip = hardwareMap.servo.get("RelicGlyph");
+        relicLift = hardwareMap.servo.get("RelicLift");
 
         //Color
         if (jewel) {
@@ -113,8 +121,8 @@ public class Robot {
         if (glyph) {
             glyphLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            glyphGrabberLeft.setPosition(0.5);
-            glyphGrabberRight.setPosition(0.65);
+            glyphGrabberLeft.setPosition(1);
+            glyphGrabberRight.setPosition(0);
         }
         if (jewel) {
             jewelManipulator.setPosition(0);
@@ -195,56 +203,21 @@ public class Robot {
             double leftStrength;//0+ or 0.5+
             double rightStrength;//1- or 0.5-
             if (strength2 > strength) {
-                leftStrength = Range.clip(0.65 - 0.5 * strength2, 0, 1);
-                rightStrength = Range.clip(0.45 + 0.5 * strength2, 0, 1);
+                leftStrength = Range.clip(0.5 - 0.5 * strength2, 0, 1);
+                rightStrength = Range.clip(0.65 + 0.5 * strength2, 0, 1);
             } else {
-                leftStrength = Range.clip(0.65 + 0.5 * strength, 0, 1);
-                rightStrength = Range.clip(0.45 - 0.5*strength, 0, 1);
+                leftStrength = Range.clip(0.5 + 0.5 * strength, 0, 1);
+                rightStrength = Range.clip(0.65 - 0.5*strength, 0, 1);
             }
             glyphGrabberLeft.setPosition(leftStrength);
             glyphGrabberRight.setPosition(rightStrength);
         }
     }
 
-    public void lift(Gamepad gamepad) {
+    public void lift(Gamepad gamepad, Telemetry telemetry) {
         if (glyph_enabled) {
-            if (!glyphLift.isBusy()) {
-                glyphLift.setPower(0);
-                glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            }
-            int total = 4750;
-            int distance = 0;
-            if (gamepad.b && !prevStateBButton) {
-                height_setting++;
-            }
-            if (height_setting >= 4 || gamepad.left_bumper) {
-                height_setting = 0;
-            }
-            switch (height_setting) {
-                case 0:
-                    distance = 0;
-                    break;
-                case 1:
-                    distance = total / 4;
-                    break;
-                case 2:
-                    distance = total / 2 + 250;
-                    break;
-                case 3:
-                    distance = total;
-                    break;
-            }
-        /*if (gamepad.b) {
-            /**int distance = (int) (amount * GLYPH_LIFT_RATIO * COUNTS_PER_MOTOR_REV);
-             telemetry.addData("Position", glyphLift.getCurrentPosition());
-             telemetry.addData("Target", distance);
-             telemetry.update();
-             glyphLift.setTargetPosition(distance);
-        }*/
-            glyphLift.setTargetPosition(distance);
-            glyphLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            glyphLift.setPower(1.0);
-            prevStateBButton = gamepad.b;
+            double speed = -gamepad.left_stick_y;
+            glyphLift.setPower(speed);
         }
     }
 
@@ -254,7 +227,7 @@ public class Robot {
                 glyphLift.setPower(0);
                 glyphLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
-            int total = 4750;
+            int total = 4300;
             int distance = 0;
             height_setting = height;
             switch (height_setting) {
@@ -412,5 +385,19 @@ public class Robot {
 
             return isRed;
         } else {return false;}
+    }
+
+    public void relicArm(Gamepad gamepad) {
+        /*float speed = gamepad.right_stick_y;
+        if ((relicArm.getCurrentPosition() >= 60 && speed > 0) || (relicArm.getCurrentPosition() <= 0 && speed < 0)) {
+            speed = 0;
+        }
+        relicArm.setPower(speed);
+        relicLift.setPosition(Math.abs(gamepad.right_stick_x));
+        if (gamepad.right_bumper) {
+            relicGrip.setPosition(1);
+        } else {
+            relicGrip.setPosition(0);
+        }*/
     }
 }

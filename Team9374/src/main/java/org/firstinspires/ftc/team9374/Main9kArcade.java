@@ -37,6 +37,7 @@ public class Main9kArcade extends OpMode {
         robot.speed = speed;
         robot.runMotors(robot.getMotors(0, lStick, rStick));
         robot.grasp(gamepad2.right_trigger, gamepad2.left_trigger);
-        robot.lift(gamepad2);
+        robot.lift(gamepad2, telemetry);
+        robot.relicArm(gamepad2);
     }
 }
