@@ -20,6 +20,7 @@ public class Auto9kJewelDriveBS extends LinearOpMode {
     private double motorSpeed = 1.0;
 
     public void runOpMode() {
+        robot.in_auto = true;
         robot.init(hardwareMap, true, true, true, false);
         robot.speed = 1;
         robot.resetTimer();

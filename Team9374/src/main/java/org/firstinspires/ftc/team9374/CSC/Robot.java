@@ -33,6 +33,8 @@ public class Robot {
 
     public Robot() {}
 
+    public boolean in_auto = false;
+
     /******************************************\
     |*****************Definitions**************|
     \******************************************/
@@ -109,6 +111,7 @@ public class Robot {
         }
         relicGrip = hardwareMap.servo.get("RelicGlyph");
         relicLift = hardwareMap.servo.get("RelicLift");
+        relicLift.setPosition(1);
 
         //Color
         if (jewel) {
@@ -125,7 +128,11 @@ public class Robot {
             glyphGrabberRight.setPosition(0);
         }
         if (jewel) {
-            jewelManipulator.setPosition(0);
+            if (in_auto) {
+                jewelManipulator.setPosition(0);
+            } else {
+                jewelManipulator.setPosition(0.25);
+            }
             jewelColorSensor.enableLed(true);
         }
         speed = 2;
@@ -356,7 +363,7 @@ public class Robot {
 
     public boolean jewelArm(Telemetry telemetry, double extension) {
         if (jewel_enabled) {
-            jewelManipulator.setPosition(extension);
+            jewelManipulator.setPosition(extension*0.75+0.25);
             ElapsedTime timeToExtend = new ElapsedTime();
             while (timeToExtend.seconds() < 1) {}
             int red = jewelColorSensor.red();
@@ -388,16 +395,16 @@ public class Robot {
     }
 
     public void relicArm(Gamepad gamepad) {
-        /*float speed = gamepad.right_stick_y;
-        if ((relicArm.getCurrentPosition() >= 60 && speed > 0) || (relicArm.getCurrentPosition() <= 0 && speed < 0)) {
+        float speed = -gamepad.right_stick_x;
+        if ((relicArm.getCurrentPosition() == 60 && speed > 0) || (relicArm.getCurrentPosition() == 0 && speed < 0)) {
             speed = 0;
         }
         relicArm.setPower(speed);
-        relicLift.setPosition(Math.abs(gamepad.right_stick_x));
+        relicLift.setPosition(1-Math.abs(gamepad.right_stick_y)/2);
         if (gamepad.right_bumper) {
             relicGrip.setPosition(1);
         } else {
             relicGrip.setPosition(0);
-        }*/
+        }
     }
 }
